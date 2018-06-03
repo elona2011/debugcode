@@ -2,13 +2,13 @@ const estraverse = require('estraverse')
 const { parseModule } = require('esprima')
 const { generate } = require('escodegen')
 
-exports.editDebugCode = code => {
+exports.editDebugCode = (code, env) => {
   let tree = parseModule(code)
   estraverse.replace(tree, {
     enter(node, parent) {
       if (node.type === 'IfStatement' && node.test.type === 'Identifier') {
         if (node.test.name === 'DEVELOPMENT') {
-          switch (process.env.NODE_ENV) {
+          switch (env) {
             case 'dev':
               node.test = {
                 type: 'Literal',
@@ -21,7 +21,7 @@ exports.editDebugCode = code => {
               return estraverse.VisitorOption.Remove
           }
         } else if (node.test.name === 'PREPRODUCTION') {
-          switch (process.env.NODE_ENV) {
+          switch (env) {
             case 'pre':
             case 'dev':
               node.test = {
@@ -35,7 +35,7 @@ exports.editDebugCode = code => {
               return estraverse.VisitorOption.Remove
           }
         } else if (node.test.name === 'PRODUCTION') {
-          switch (process.env.NODE_ENV) {
+          switch (env) {
             case 'dev':
               return estraverse.VisitorOption.Remove
             case 'pre':
